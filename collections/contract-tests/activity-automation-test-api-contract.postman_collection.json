@@ -1,0 +1,201 @@
+{
+	"info": {
+		"_postman_id": "c596a5d6-02db-4ec0-b4d0-266a30ccd671",
+		"name": "activity-automation-test-api-contract",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "26742711"
+	},
+	"item": [
+		{
+			"name": "Realizar login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Check message\", function () {\r",
+							"    pm.expect(jsonData).to.have.property('message')\r",
+							"    pm.expect('Login realizado com sucesso').to.include(jsonData.message)\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Check if contains authorization\", function (){\r",
+							"    pm.expect(jsonData).to.have.property('authorization')\r",
+							"});\r",
+							"\r",
+							"const resposta = pm.response.json();\r",
+							"pm.collectionVariables.set(\"token\", resposta.authorization);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"fulano@qa.com\",\r\n    \"password\": \"teste\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/Login"
+			},
+			"response": []
+		},
+		{
+			"name": "Cadastrar produtos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"if (pm.response.code === 201) {\r",
+							"    pm.test(\"Status code is 201\", function () {\r",
+							"        pm.response.to.have.status(201);\r",
+							"        pm.expect(jsonData.message).to.equal('Cadastro realizado com sucesso')\r",
+							"        pm.expect(jsonData).to.have.property('_id')\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"else if (pm.response.code === 400) {\r",
+							"    pm.test(\"Status code is 400\", function () {\r",
+							"        pm.response.to.have.status(400);\r",
+							"        pm.expect(jsonData.message).to.equal('Já existe produto com esse nome')\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"else if (pm.response.code === 403) {\r",
+							"    pm.test(\"Status code is 403\", function () {\r",
+							"        pm.response.to.have.status(403);\r",
+							"        pm.expect(jsonData.message).to.equal('Rota exclusiva para administradores')\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": {
+						"value": "{{token}}",
+						"key": "Authorization"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"nome\": \"Samsung Galaxy Watch4\",\r\n  \"preco\": 800,\r\n  \"descricao\": \"Smart Watch\",\r\n  \"quantidade\": 100\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/produtos"
+			},
+			"response": []
+		},
+		{
+			"name": "Listar carrinhos cadastrados",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response has correct structure\", function () {\r",
+							"    pm.expect(jsonData).to.have.property('quantidade').that.equals(1);\r",
+							"    pm.expect(jsonData).to.have.property('carrinhos').that.is.an('array').with.lengthOf(1);\r",
+							"    pm.expect(jsonData.carrinhos[0]).to.have.property('produtos').that.is.an('array')\r",
+							"    pm.expect(jsonData.carrinhos[0]).to.have.property('precoTotal').that.is.a('number');\r",
+							"    pm.expect(jsonData.carrinhos[0]).to.have.property('quantidadeTotal').that.is.a('number');\r",
+							"    pm.expect(jsonData.carrinhos[0]).to.have.property('idUsuario').that.is.a('string');\r",
+							"    pm.expect(jsonData.carrinhos[0]).to.have.property('_id').that.is.a('string');\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{baseUrl}}/carrinhos"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "idUsuario",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "idProduto",
+			"value": "K6leHdftCeOJj8BJ",
+			"type": "string"
+		},
+		{
+			"key": "idCarrinho",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "qtdProduto",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

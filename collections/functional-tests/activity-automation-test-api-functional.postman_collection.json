@@ -1,0 +1,209 @@
+{
+	"info": {
+		"_postman_id": "aedf64c5-4ab5-40c9-a2b0-9b85f666567a",
+		"name": "activity-automation-test-api-functional",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "26742711"
+	},
+	"item": [
+		{
+			"name": "Realizar login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const resposta = pm.response.json();\r",
+							"pm.collectionVariables.set(\"token\", resposta.authorization);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"fulano@qa.com\",\r\n  \"password\": \"teste\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/Login"
+			},
+			"response": []
+		},
+		{
+			"name": "Cadastrar carrinho",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"if (pm.response.code === 201) {\r",
+							"    pm.test(\"Status code is 201 - Success\", function () {\r",
+							"        pm.response.to.have.status(201);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Success message and cart ID\", function () {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        pm.expect(jsonData.message).to.eql(\"Cadastro realizado com sucesso\");\r",
+							"        pm.expect(jsonData).to.have.property(\"_id\");\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"else if (pm.response.code === 400) {\r",
+							"    pm.test(\"Status code is 400 - Error\", function () {\r",
+							"        pm.response.to.have.status(400);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Error message - Product or cart issue\", function () {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        pm.expect(jsonData.message).to.match(/produto duplicado|mais de 1 carrinho|Produto não encontrado|não possui quantidade suficiente/);\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"else if (pm.response.code === 401) {\r",
+							"    pm.test(\"Status code is 401 - Invalid Token\", function () {\r",
+							"        pm.response.to.have.status(401);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Error message - Invalid or expired token\", function () {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        pm.expect(jsonData.message).to.eql(\"Token de acesso ausente, inválido, expirado ou usuário do token não existe mais\");\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"else {\r",
+							"    pm.test(\"Unexpected status code\", function () {\r",
+							"        pm.expect.fail(\"Received unexpected status code: \" + pm.response.code);\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": {
+						"value": "{{token}}",
+						"key": "Authorization"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"produtos\": [\r\n    {\r\n      \"idProduto\": \"BeeJh5lz3k6kSIzA\",\r\n      \"quantidade\": 1\r\n    },\r\n    {\r\n      \"idProduto\": \"YaeJ455lz3k6kSIzA\",\r\n      \"quantidade\": 3\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/carrinhos"
+			},
+			"response": []
+		},
+		{
+			"name": "Listar carrinhos cadastrados",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verifica se o status code é 200 - Sucesso\r",
+							"pm.test(\"Status code is 200 - Success\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains cart with correct structure\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(jsonData).to.have.property(\"quantidade\");\r",
+							"    pm.expect(jsonData.quantidade).to.eql(1);\r",
+							"\r",
+							"    pm.expect(jsonData.carrinhos).to.be.an(\"array\").that.is.not.empty;\r",
+							"\r",
+							"    var carrinho = jsonData.carrinhos[0];\r",
+							"    pm.expect(carrinho.produtos).to.be.an(\"array\").that.has.lengthOf(2);\r",
+							"\r",
+							"    pm.expect(carrinho).to.have.property(\"precoTotal\");\r",
+							"    pm.expect(carrinho.precoTotal).to.eql(6180);\r",
+							"\r",
+							"    pm.expect(carrinho).to.have.property(\"quantidadeTotal\");\r",
+							"    pm.expect(carrinho.quantidadeTotal).to.eql(3);\r",
+							"\r",
+							"    pm.expect(carrinho).to.have.property(\"idUsuario\");\r",
+							"    pm.expect(carrinho.idUsuario).to.eql(\"0uxuPY0cbmQhpEz1\");\r",
+							"\r",
+							"    pm.expect(carrinho).to.have.property(\"_id\");\r",
+							"    pm.expect(carrinho._id).to.eql(\"qbMqntef4iTOwWfg\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Check products details in the cart\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    var produtos = jsonData.carrinhos[0].produtos;\r",
+							"\r",
+							"    pm.expect(produtos[0].idProduto).to.eql(\"BeeJh5lz3k6kSIzA\");\r",
+							"    pm.expect(produtos[0].quantidade).to.eql(2);\r",
+							"    pm.expect(produtos[0].precoUnitario).to.eql(470);\r",
+							"\r",
+							"    pm.expect(produtos[1].idProduto).to.eql(\"K6leHdftCeOJj8BJ\");\r",
+							"    pm.expect(produtos[1].quantidade).to.eql(1);\r",
+							"    pm.expect(produtos[1].precoUnitario).to.eql(5240);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{baseUrl}}/carrinhos"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

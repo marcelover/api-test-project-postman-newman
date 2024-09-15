@@ -1,0 +1,88 @@
+{
+	"info": {
+		"_postman_id": "f0d4a534-5dcf-4ee4-a23f-bc4172834226",
+		"name": "activity-automation-performance-load",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "26742711"
+	},
+	"item": [
+		{
+			"name": "Realizar login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Check message\", function () {\r",
+							"    pm.expect(jsonData).to.have.property('message')\r",
+							"    pm.expect('Login realizado com sucesso').to.include(jsonData.message)\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Check if contains authorization\", function (){\r",
+							"    pm.expect(jsonData).to.have.property('authorization')\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"fulano@qa.com\",\r\n  \"password\": \"teste\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/Login"
+			},
+			"response": []
+		},
+		{
+			"name": "Listar usuários cadastrados",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Check if response has correct structure\", function (){\r",
+							"    pm.expect(jsonData).to.have.property('quantidade').that.equals(3);\r",
+							"    pm.expect(jsonData).to.have.property('usuarios').that.is.an('array').with.lengthOf(3)\r",
+							"    pm.expect(jsonData.usuarios[0]).to.have.property('nome')\r",
+							"    pm.expect(jsonData.usuarios[0]).to.have.property('email')\r",
+							"    pm.expect(jsonData.usuarios[0]).to.have.property('password')\r",
+							"    pm.expect(jsonData.usuarios[0]).to.have.property('administrador')\r",
+							"    pm.expect(jsonData.usuarios[0]).to.have.property('_id')\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{baseUrl}}/usuarios"
+			},
+			"response": []
+		}
+	]
+}
